@@ -54,8 +54,8 @@
 	</build>
 	<modules>
 		<module>handling-request</module>
-		<module>stockage</module>
-
+		<module>MerchantMangement</module>
+		<module>TMS</module>
 		<module>removal_message</module>
 		<module>verification_message</module>
 		<module>integrity_checks</module>

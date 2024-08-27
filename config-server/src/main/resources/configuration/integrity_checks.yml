@@ -1,9 +1,22 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/smartbox?serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/Integrity_DB?serverTimezone=UTC
     username: root
     password: # (Add your password here if needed)
     driver-class-name: com.mysql.cj.jdbc.Driver
+    consumer:
+      bootstrap-servers: localhost:9092
+      group-id: handling
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value.deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: '*'
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value.serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
   jpa:
     hibernate:
       ddl-auto: update

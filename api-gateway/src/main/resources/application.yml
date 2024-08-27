@@ -1,15 +1,29 @@
 server:
-  port: 8765  # Port on which the API Gateway will run
+  port: 8222  # Port on which the API Gateway will run
 
 spring:
   application:
-    name: gateway-service  # Name of the application
-
+    name: gateway-service
   config:
-    import: optional:configserver:http://localhost:8888  # Optional Config Server URL
-
+    import: optional:configserver:http://localhost:8888
   cloud:
     gateway:
       discovery:
         locator:
-          enabled: true  # Enable service discovery for routing
+          enabled: true
+      routes:
+        - id: nonfunctional_message
+          uri: lb://nonfunctionalmessage
+          predicates:
+            - Path=/NonFunctionalMessage/**
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+
