@@ -1,0 +1,147 @@
+
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.4
+    depends_on:
+      - zookeeper
+    ports:
+      - 29092:29092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  config-server:
+    image: config-server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8080"
+    depends_on:
+      - kafka
+  discovery:
+    image: discovery
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8080"
+    depends_on:
+      - kafka
+      - config-server
+
+  api-gateway:
+    image: api-gateway
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8222:8080"
+    depends_on:
+      - kafka
+      - discovery
+  handling-request:
+    image: handling-request
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8090:8080"
+    depends_on:
+      - kafka
+      - config-server
+      - discovery
+      - mysql1
+
+  MerchantMangement:
+    image: merchantmangement
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8098:8080"
+    depends_on:
+      - kafka
+      - config-server
+      - discovery
+  removal_message:
+    image: removal_message
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8093:8080"
+    depends_on:
+      - kafka
+      - config-server
+  TMS:
+    image: tms
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8099:8080"
+    depends_on:
+      - kafka
+      - config-server
+  verification_message:
+    image: verification_message
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8095:8080"
+    depends_on:
+      - kafka
+      - config-server
+  dropmessage:
+    image: dropmessage
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8077:8080"
+    depends_on:
+      - kafka
+      - config-server
+  integrity_checks:
+    image: integrity_checks
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8091:8080"
+    depends_on:
+      - kafka
+      - config-server
+      - discovery
+      - MerchantMangement
+      - TMS
+
+  mysql1:
+    image: mysql:8.0
+    container_name: mysql_container_1
+    environment:
+      MYSQL_ROOT_PASSWORD: rkia
+      MYSQL_DATABASE: stockage_message
+      MYSQL_USER: root
+      MYSQL_PASSWORD: rkia
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data_1:/var/lib/mysql
+
+volumes:
+  mysql_data_1:
+
+
+
+
